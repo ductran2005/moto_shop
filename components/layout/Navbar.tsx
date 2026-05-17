@@ -1,21 +1,26 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type MouseEvent } from "react";
-import type { ProductCategory } from "@/components/product/product-data";
+import type { ProductCategory } from "@/content/productData";
 
 const navLinks: Array<{ label: string; href: string; category?: ProductCategory; sectionId?: string }> = [
   { label: "Trang Chủ", href: "/" },
-  { label: "Sản Phẩm", href: "#product", sectionId: "product" },
-  { label: "Về Chúng Tôi", href: "#ve-chung-toi", sectionId: "ve-chung-toi" },
-  { label: "Kiến Thức & Kinh Nghiệm", href: "#kien-thuc-kinh-nghiem", sectionId: "kien-thuc-kinh-nghiem" },
+  { label: "Sản Phẩm", href: "/#product", sectionId: "product" },
+  { label: "Về Chúng Tôi", href: "/#ve-chung-toi", sectionId: "ve-chung-toi" },
+  {
+    label: "Kiến Thức & Kinh Nghiệm",
+    href: "/#kien-thuc-kinh-nghiem",
+    sectionId: "kien-thuc-kinh-nghiem",
+  },
 ];
 
 const headerActions = [
   { name: "search", label: "Tìm kiếm sản phẩm" },
-  { name: "user", label: "Tài khoản của tôi" },
-  { name: "cart", label: "Giỏ hàng" },
+  { name: "user", label: "Tài khoản của tôi", href: "/login" },
+  { name: "cart", label: "Giỏ hàng", href: "/cart" },
 ] as const;
 
 function Icon({ name }: { name: "search" | "user" | "cart" | "menu" | "close" }) {
@@ -122,6 +127,7 @@ export function Navbar() {
 
   const handleSectionNavClick = (event: MouseEvent<HTMLAnchorElement>, sectionId?: string) => {
     if (!sectionId) return;
+    if (pathname !== "/") return;
 
     event.preventDefault();
     setActiveProductCategory(null);
@@ -135,20 +141,22 @@ export function Navbar() {
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-[var(--color-bg-primary)]/95 backdrop-blur">
       <div className="grid h-20 w-full grid-cols-[1fr_auto] items-center gap-4 px-4 md:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-12">
-        <a
-          href="#"
+        <Link
+          href="/"
           className="flex h-[58px] w-[146px] items-center justify-self-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-accent)]"
           aria-label="Về trang chủ SpeedZone"
         >
           <Image
-            src="/images/speedzone/speedzone-logo.png"
+            src="/images/speedzone-logo.png"
             alt="SpeedZone"
             width={264}
             height={128}
             preload
+            unoptimized
+            sizes="146px"
             className="h-auto w-full object-contain"
           />
-        </a>
+        </Link>
 
         <nav className="hidden items-center justify-center gap-8 lg:flex" aria-label="Điều hướng chính">
           {navLinks.map((link) => {
@@ -156,7 +164,7 @@ export function Navbar() {
               link.href === "/"
                 ? pathname === "/" && activeProductCategory === null && activeSectionId === null
                 : link.sectionId
-                  ? link.sectionId === activeSectionId
+                  ? pathname === "/" && link.sectionId === activeSectionId
                   : link.category === activeProductCategory;
 
             return (
@@ -184,22 +192,36 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center justify-self-end gap-1.5">
-          {headerActions.map((action) => (
-            <button
-              key={action.name}
-              type="button"
-              className="group relative hidden h-10 w-10 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] sm:flex"
-              aria-label={action.label}
-              title={action.label}
-            >
-              <Icon name={action.name} />
-              {action.name === "cart" && (
-                <span className="absolute right-0.5 top-0.5 grid h-4 w-4 place-items-center rounded-full bg-[var(--color-accent)] text-[10px] font-bold text-white ring-2 ring-[var(--color-bg-primary)]">
-                  3
-                </span>
-              )}
-            </button>
-          ))}
+          {headerActions.map((action) =>
+            "href" in action ? (
+              <Link
+                key={action.name}
+                href={action.href}
+                className={`group relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] ${
+                  pathname === action.href ? "text-[var(--color-accent)]" : "text-white"
+                }`}
+                aria-label={action.label}
+                title={action.label}
+              >
+                <Icon name={action.name} />
+                {action.name === "cart" && (
+                  <span className="absolute right-0.5 top-0.5 grid h-4 w-4 place-items-center rounded-full bg-[var(--color-accent)] text-[10px] font-bold text-white ring-2 ring-[var(--color-bg-primary)]">
+                    3
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <button
+                key={action.name}
+                type="button"
+                className="group relative hidden h-10 w-10 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] sm:flex"
+                aria-label={action.label}
+                title={action.label}
+              >
+                <Icon name={action.name} />
+              </button>
+            ),
+          )}
           <button
             type="button"
             className="grid h-10 w-10 place-items-center rounded-full text-white transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] lg:hidden"

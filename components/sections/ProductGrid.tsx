@@ -1,5 +1,5 @@
 import { ProductCard } from "@/components/ui/ProductCard";
-import type { products } from "@/components/product/product-data";
+import type { products } from "@/content/productData";
 
 type ProductGridProps = {
   products: typeof products[number][];

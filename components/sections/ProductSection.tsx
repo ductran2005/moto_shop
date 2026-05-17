@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CategoryTabs } from "@/components/product/CategoryTabs";
-import { PromoBannerSection } from "@/components/product/PromoBannerSection";
-import { ProductGrid } from "@/components/product/ProductGrid";
-import { productCategories, products, type ProductCategory } from "@/components/product/product-data";
+import { productCategories, products, type ProductCategory } from "@/content/productData";
+import { CategoryTabs } from "@/components/sections/CategoryTabs";
+import { ProductGrid } from "@/components/sections/ProductGrid";
+import { PromoBannerSection } from "@/components/sections/PromoBannerSection";
 
 export function ProductSection() {
   const productsPerPage = 4;

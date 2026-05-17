@@ -1,5 +1,5 @@
-import { CategoryBar } from "@/components/home/CategoryBar";
-import { PromoBanners } from "@/components/home/PromoBanners";
+import { CategoryBar } from "@/components/sections/CategoryBar";
+import { PromoBanners } from "@/components/sections/PromoBanners";
 
 export function ProductShowcase() {
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { ProductCategory } from "@/components/product/product-data";
+import type { ProductCategory } from "@/content/productData";
 
 const categoryLinks = [
   { label: "Xe máy", sectionId: "xe-may-products", category: "Xe Máy" },

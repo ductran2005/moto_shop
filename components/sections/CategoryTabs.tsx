@@ -1,6 +1,6 @@
 "use client";
 
-import { productCategories, type ProductCategory } from "@/components/product/product-data";
+import { productCategories, type ProductCategory } from "@/content/productData";
 
 type CategoryIconName = (typeof productCategories)[number]["icon"];
 
@@ -82,8 +82,8 @@ type CategoryTabsProps = {
 
 export function CategoryTabs({ activeCategory, onCategorySelect }: CategoryTabsProps) {
   return (
-    <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex min-w-[720px] overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.06)] lg:min-w-0">
+    <div>
+      <div className="mx-auto grid grid-cols-2 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:grid-cols-3 lg:flex">
         {productCategories.map((category) => {
           const isActive = activeCategory === category.title;
 
@@ -92,7 +92,7 @@ export function CategoryTabs({ activeCategory, onCategorySelect }: CategoryTabsP
               key={category.title}
               type="button"
               onClick={() => onCategorySelect(category.title)}
-              className="relative flex min-h-[116px] flex-1 flex-col items-center justify-center gap-1.5 border-r border-zinc-200 px-5 py-5 text-center last:border-r-0"
+              className="relative flex min-h-[108px] flex-col items-center justify-center gap-1.5 border-r border-b border-zinc-200 px-3 py-4 text-center even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 sm:min-h-[112px] sm:px-4 sm:[&:nth-child(3n)]:border-r-0 sm:[&:nth-last-child(-n+3)]:border-b-0 lg:min-h-[116px] lg:flex-1 lg:border-b-0 lg:px-5 lg:even:border-r lg:last:border-r-0"
             >
               <span className={isActive ? "text-[var(--color-accent)]" : "text-zinc-950"}>
                 <CategoryIcon name={category.icon} />

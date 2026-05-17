@@ -1,12 +1,21 @@
+import Image from "next/image";
+
 import { Button } from "@/components/ui/Button";
 
 export function HeroBanner() {
   return (
     <section id="hero-section" className="scroll-mt-28 relative isolate h-[100svh] min-h-[720px] overflow-hidden bg-[var(--color-bg-primary)]">
-      <div className="absolute inset-0 bg-[url('/images/3919b023-ea89-4ffb-aa71-ebff8d7d94da.png')] bg-cover bg-center bg-no-repeat" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,10,0.84)_0%,rgba(10,10,10,0.58)_34%,rgba(10,10,10,0.12)_62%,rgba(10,10,10,0.08)_100%)]" />
+      <Image
+        src="/images/3919b023-ea89-4ffb-aa71-ebff8d7d94da.png"
+        alt="Xe máy thể thao SpeedZone"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-[66%_center] sm:object-[62%_center] lg:object-center"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,10,10,0.94)_0%,rgba(10,10,10,0.76)_46%,rgba(10,10,10,0.38)_74%,rgba(10,10,10,0.18)_100%)] sm:bg-[linear-gradient(90deg,rgba(10,10,10,0.88)_0%,rgba(10,10,10,0.64)_38%,rgba(10,10,10,0.16)_68%,rgba(10,10,10,0.08)_100%)]" />
 
-      <div className="relative z-10 flex h-full w-full items-center px-4 pb-28 pt-10 md:px-6 lg:pl-[15%] lg:pr-12 lg:pb-32">
+      <div className="relative z-10 flex h-full w-full items-center px-4 pb-20 pt-24 md:px-6 md:pb-28 lg:pl-[15%] lg:pr-12 lg:pb-32">
         <div className="max-w-[720px]">
           <p className="mb-5 inline-flex border-l-2 border-[var(--color-accent)] pl-4 text-xs font-bold uppercase tracking-[0.38em] text-zinc-300">
             Ride · Protect · Perform

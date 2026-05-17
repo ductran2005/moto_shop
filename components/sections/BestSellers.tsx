@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRef } from "react";
-import { products } from "@/components/product/product-data";
+import { products } from "@/content/productData";
 import { StarRating } from "@/components/ui/StarRating";
 
 const bestSellerProductIds = [
