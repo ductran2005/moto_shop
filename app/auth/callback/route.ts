@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getProfileRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -16,13 +17,9 @@ export async function GET(request: Request) {
         return NextResponse.redirect(new URL(next, requestUrl.origin));
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
+      const role = await getProfileRole(supabase, data.user);
 
-      const destination = profile?.role === "admin" ? "/admin" : "/";
+      const destination = role === "admin" ? "/admin" : "/";
       return NextResponse.redirect(new URL(destination, requestUrl.origin));
     }
   }

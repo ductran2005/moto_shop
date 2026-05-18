@@ -3,10 +3,9 @@
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
+import { login } from "@/app/(auth)/login/actions";
 import { SocialLogin } from "@/components/auth/SocialLogin";
-import { createClient } from "@/lib/supabase/client";
 import type { LoginFormCopy } from "@/types/auth";
 
 interface LoginFormProps {
@@ -14,7 +13,6 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ copy }: LoginFormProps) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -38,32 +36,16 @@ export function LoginForm({ copy }: LoginFormProps) {
     setError("");
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+    const result = await login({
+      email,
       password,
     });
 
-    if (signInError) {
+    if (result?.error) {
       setIsLoading(false);
-      setError(signInError.message);
+      setError(result.error);
       return;
     }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-
-    if (profileError) {
-      setIsLoading(false);
-      setError("Không thể kiểm tra quyền tài khoản. Vui lòng thử lại.");
-      return;
-    }
-
-    router.push(profile.role === "admin" ? "/admin" : "/");
-    router.refresh();
   }
 
   return (

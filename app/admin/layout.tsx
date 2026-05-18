@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import { getProfileRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -12,13 +13,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const role = await getProfileRole(supabase, user);
 
-  if (profile?.role !== "admin") {
+  if (role !== "admin") {
     redirect("/");
   }
 
