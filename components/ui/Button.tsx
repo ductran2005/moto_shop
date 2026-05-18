@@ -1,15 +1,21 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
 
 type ButtonVariant = "primary" | "outline" | "light";
 
 type BaseProps = {
-  children: ReactNode;
+  children?: ReactNode;
   variant?: ButtonVariant;
   className?: string;
 };
 
-type ButtonLinkProps = BaseProps & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
-type ButtonNativeProps = BaseProps & ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
+type ButtonLinkProps = BaseProps &
+  AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
+type ButtonNativeProps = BaseProps &
+  ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined };
 type ButtonProps = ButtonLinkProps | ButtonNativeProps;
 
 const variantClasses: Record<ButtonVariant, string> = {

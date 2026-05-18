@@ -39,6 +39,11 @@ body {
   font-family: var(--font-body);
 }
 
+::selection {
+  background: rgba(239, 68, 68, 0.34);
+  color: #ffffff;
+}
+
 a,
 button {
   -webkit-tap-highlight-color: transparent;

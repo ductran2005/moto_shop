@@ -26,3 +26,16 @@ export interface LoginFormCopy {
   registerLabel: string;
 }
 
+export interface RegisterFormCopy {
+  headingLead: string;
+  headingAccent: string;
+  subtitle: string;
+  fullNamePlaceholder: string;
+  emailPlaceholder: string;
+  passwordPlaceholder: string;
+  confirmPasswordPlaceholder: string;
+  submitLabel: string;
+  dividerLabel: string;
+  loginPrompt: string;
+  loginLabel: string;
+}

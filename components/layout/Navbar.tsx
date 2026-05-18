@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState, type MouseEvent } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { ProductCategory } from "@/content/productData";
+import { createClient } from "@/lib/supabase/client";
 
 const navLinks: Array<{ label: string; href: string; category?: ProductCategory; sectionId?: string }> = [
   { label: "Trang Chủ", href: "/" },
@@ -19,7 +20,6 @@ const navLinks: Array<{ label: string; href: string; category?: ProductCategory;
 
 const headerActions = [
   { name: "search", label: "Tìm kiếm sản phẩm" },
-  { name: "user", label: "Tài khoản của tôi", href: "/login" },
   { name: "cart", label: "Giỏ hàng", href: "/cart" },
 ] as const;
 
@@ -75,11 +75,20 @@ function Icon({ name }: { name: "search" | "user" | "cart" | "menu" | "close" })
   );
 }
 
-export function Navbar() {
+interface NavbarUser {
+  email: string | null;
+  fullName: string | null;
+}
+
+export function Navbar({ user }: { user: NavbarUser | null }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [activeProductCategory, setActiveProductCategory] = useState<ProductCategory | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleActiveCategory = (event: Event) => {
@@ -90,6 +99,17 @@ export function Navbar() {
 
     window.addEventListener("product-category-active", handleActiveCategory);
     return () => window.removeEventListener("product-category-active", handleActiveCategory);
+  }, []);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setIsAccountOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
   useEffect(() => {
@@ -137,6 +157,17 @@ export function Navbar() {
       block: "start",
     });
   };
+
+  const accountLabel = user?.fullName || user?.email || "Tài khoản của tôi";
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setIsAccountOpen(false);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-[var(--color-bg-primary)]/95 backdrop-blur">
@@ -197,30 +228,74 @@ export function Navbar() {
               <Link
                 key={action.name}
                 href={action.href}
-                className={`group relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] ${
+                className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] lg:flex ${
                   pathname === action.href ? "text-[var(--color-accent)]" : "text-white"
                 }`}
                 aria-label={action.label}
                 title={action.label}
               >
                 <Icon name={action.name} />
-                {action.name === "cart" && (
-                  <span className="absolute right-0.5 top-0.5 grid h-4 w-4 place-items-center rounded-full bg-[var(--color-accent)] text-[10px] font-bold text-white ring-2 ring-[var(--color-bg-primary)]">
-                    3
-                  </span>
-                )}
               </Link>
             ) : (
               <button
                 key={action.name}
                 type="button"
-                className="group relative hidden h-10 w-10 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] sm:flex"
+                className="group relative hidden h-10 w-10 items-center justify-center rounded-full text-white transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] lg:flex"
                 aria-label={action.label}
                 title={action.label}
               >
                 <Icon name={action.name} />
               </button>
             ),
+          )}
+          {user ? (
+            <div ref={accountMenuRef} className="relative hidden lg:block">
+              <button
+                type="button"
+                onClick={() => setIsAccountOpen((value) => !value)}
+                className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-accent)] transition-all duration-200 hover:bg-white/10"
+                aria-label={accountLabel}
+                aria-expanded={isAccountOpen}
+                aria-haspopup="menu"
+                title={accountLabel}
+              >
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--color-accent)] text-white">
+                  <Icon name="user" />
+                </span>
+              </button>
+
+              {isAccountOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-12 w-56 rounded-lg border border-white/10 bg-[var(--color-bg-secondary)] p-2 shadow-2xl"
+                >
+                  <div className="border-b border-white/10 px-3 py-2">
+                    <p className="truncate text-sm font-semibold text-white">{user.fullName || "Người dùng"}</p>
+                    {user.email ? <p className="truncate text-xs text-zinc-400">{user.email}</p> : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="mt-2 flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    role="menuitem"
+                  >
+                    {isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-white/10 hover:text-[var(--color-accent)] lg:flex ${
+                pathname === "/login" ? "text-[var(--color-accent)]" : "text-white"
+              }`}
+              aria-label={accountLabel}
+              title={accountLabel}
+            >
+              <Icon name="user" />
+            </Link>
           )}
           <button
             type="button"
@@ -252,7 +327,61 @@ export function Navbar() {
                 {link.label}
               </a>
             ))}
+
+            <div className="mt-3 grid gap-1 border-t border-white/10 pt-3">
+              <button
+                type="button"
+                className="flex items-center gap-3 rounded px-3 py-3 text-sm font-bold uppercase text-white transition-colors hover:bg-white/5 hover:text-[var(--color-accent)]"
+              >
+                <Icon name="search" />
+                <span>Tìm kiếm</span>
+              </button>
+              <Link
+                href="/cart"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 rounded px-3 py-3 text-sm font-bold uppercase text-white transition-colors hover:bg-white/5 hover:text-[var(--color-accent)]"
+              >
+                <Icon name="cart" />
+                <span>Giỏ hàng</span>
+              </Link>
+            </div>
           </nav>
+
+          <div className="border-t border-white/10 px-4 py-4 md:px-6">
+            {user ? (
+              <div className="grid gap-3">
+                <div>
+                  <p className="truncate text-sm font-semibold text-white">{user.fullName || "Người dùng"}</p>
+                  {user.email ? <p className="mt-1 truncate text-xs text-zinc-400">{user.email}</p> : null}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="flex h-11 items-center justify-center rounded-md bg-white/10 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex h-11 items-center justify-center rounded-md bg-[var(--color-accent)] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#c41a1f]"
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="flex h-11 items-center justify-center rounded-md border border-white/15 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </header>

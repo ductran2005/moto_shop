@@ -22,7 +22,13 @@ const FEATURE_BADGES: FeatureBadgeItem[] = [
   },
 ];
 
-export function HeroBrand() {
+interface HeroBrandProps {
+  description?: string;
+}
+
+export function HeroBrand({
+  description = "Đăng nhập để trải nghiệm thế giới xe máy chính hãng và phụ kiện chất lượng tại SpeedZone.",
+}: HeroBrandProps) {
   return (
     <section className="relative hidden min-h-[760px] overflow-hidden lg:block">
       <Image
@@ -50,10 +56,7 @@ export function HeroBrand() {
             Bứt tốc
             <span className="block text-[#e31e24]">Mọi giới hạn</span>
           </h1>
-          <p className="mt-6 max-w-md text-base leading-8 text-zinc-200">
-            Đăng nhập để trải nghiệm thế giới xe máy chính hãng và phụ kiện chất lượng tại
-            SpeedZone.
-          </p>
+          <p className="mt-6 max-w-md text-base leading-8 text-zinc-200">{description}</p>
 
           <div className="mt-9 grid gap-6">
             {FEATURE_BADGES.map((feature) => (
