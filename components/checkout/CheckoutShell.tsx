@@ -98,16 +98,56 @@ export function CheckoutShell({ initialItems }: CheckoutShellProps) {
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Load guest cart if initialItems is empty
+  // Đồng bộ giỏ hàng mới nhất trên Client để tránh lỗi cache và đồng bộ Guest Cart
   useEffect(() => {
-    if (initialItems.length > 0) return;
+    let active = true;
 
-    const timeoutId = window.setTimeout(() => {
-      setItems(readGuestCart());
-    }, 0);
+    async function syncCart() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    return () => window.clearTimeout(timeoutId);
-  }, [initialItems.length]);
+      if (!user) {
+        // Guest user -> đọc giỏ hàng từ localStorage mới nhất
+        if (active) {
+          setItems(readGuestCart());
+        }
+      } else {
+        // Member user -> fetch giỏ hàng mới nhất từ Supabase DB để tránh Next.js Page Cache
+        const { data } = await supabase
+          .from("carts")
+          .select("cart_items(id, quantity, unit_price, products(id, name, brand, image_url))")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (!active) return;
+
+        const cart = data as any;
+        const dbItems: CartItem[] = (cart?.cart_items ?? [])
+          .filter((item: any) => item.products)
+          .map((item: any) => ({
+            id: item.id,
+            productId: item.products?.id,
+            name: item.products?.name ?? "Sản phẩm",
+            variant: item.products?.brand ?? "SpeedZone",
+            detail: "Sản phẩm trong giỏ hàng",
+            price: item.unit_price,
+            image: item.products?.image_url ?? "/images/products/motor-oil.png",
+            quantity: item.quantity,
+          }));
+
+        setItems(dbItems);
+      }
+    }
+
+    void syncCart();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const searchParams = useSearchParams();
   const couponCode = searchParams.get("coupon")?.toUpperCase() ?? "";

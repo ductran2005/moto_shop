@@ -6,6 +6,8 @@ import { Footer } from "@/components/layout/Footer";
 import { createClient } from "@/lib/supabase/server";
 import type { CartItem } from "@/types/cart";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Thanh toán | SpeedZone",
   description:
