@@ -162,11 +162,15 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
 
   async function handleSignOut() {
     setIsSigningOut(true);
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setIsAccountOpen(false);
-    router.push("/");
-    router.refresh();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      setIsAccountOpen(false);
+      router.push("/");
+      router.refresh();
+    } finally {
+      setIsSigningOut(false);
+    }
   }
 
   return (

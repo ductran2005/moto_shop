@@ -1,5 +1,6 @@
 export interface CartItem {
   id: string;
+  productId?: string;
   name: string;
   variant: string;
   detail: string;
@@ -16,4 +17,3 @@ export interface RecommendationItem {
   rating: number;
   reviewCount: number;
 }
-

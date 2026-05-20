@@ -1,5 +1,12 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+
 import { StarRating } from "@/components/ui/StarRating";
+import { addGuestCartItem } from "@/lib/guest-cart";
+import { createClient } from "@/lib/supabase/client";
 
 export type ProductCardData = {
   id: string;
@@ -18,7 +25,58 @@ type ProductCardProps = {
   product: ProductCardData;
 };
 
+function parseCurrency(value: string) {
+  const numberValue = Number(value.replace(/[^\d]/g, ""));
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function addToGuestCart() {
+    addGuestCartItem({
+      productId: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: parseCurrency(product.salePrice),
+      image: product.image,
+    });
+  }
+
+  function handleAddToCart() {
+    setMessage(null);
+
+    startTransition(async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        addToGuestCart();
+        setMessage("Đã thêm vào giỏ");
+        router.refresh();
+        return;
+      }
+
+      const { error } = await supabase.rpc("add_product_to_cart", {
+        product_slug: product.id,
+        item_quantity: 1,
+      });
+
+      if (error) {
+        addToGuestCart();
+        setMessage("Đã thêm vào giỏ");
+        return;
+      }
+
+      setMessage("Đã thêm vào giỏ");
+      router.refresh();
+    });
+  }
+
   return (
     <article className="group flex min-h-[492px] flex-col overflow-hidden rounded-[10px] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_14px_30px_rgba(0,0,0,0.14)]">
       <div className="relative h-[262px] shrink-0 bg-zinc-50 md:h-[256px]">
@@ -44,8 +102,18 @@ export function ProductCard({ product }: ProductCardProps) {
           <span className="text-xs text-zinc-400 line-through">{product.originalPrice}</span>
         </div>
       </div>
-      <button className="h-12 w-full shrink-0 bg-[#1a1a1a] text-xs font-bold uppercase text-white transition-colors hover:bg-[var(--color-accent)]">
-        Thêm Vào Giỏ
+      {message ? (
+        <p className="border-t border-zinc-100 px-5 py-2 text-center text-xs font-semibold text-[var(--color-accent)]">
+          {message}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        onClick={handleAddToCart}
+        disabled={isPending}
+        className="h-12 w-full shrink-0 bg-[#1a1a1a] text-xs font-bold uppercase text-white transition-colors hover:bg-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {isPending ? "Đang thêm..." : "Thêm vào giỏ"}
       </button>
     </article>
   );

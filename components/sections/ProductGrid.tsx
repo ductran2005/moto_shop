@@ -1,8 +1,8 @@
 import { ProductCard } from "@/components/ui/ProductCard";
-import type { products } from "@/content/productData";
+import type { ProductCardData } from "@/components/ui/ProductCard";
 
 type ProductGridProps = {
-  products: typeof products[number][];
+  products: ProductCardData[];
 };
 
 export function ProductGrid({ products }: ProductGridProps) {

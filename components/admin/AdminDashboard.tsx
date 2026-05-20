@@ -46,6 +46,7 @@ import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { AdminSectionKey } from "@/lib/admin-navigation";
 import { cn } from "@/lib/utils";
+import { ProductManager } from "@/components/admin/ProductManager";
 
 const navGroups = [
   {
@@ -920,6 +921,11 @@ function SectionWorkspace({
   ) => void;
 }) {
   const content = sectionContent[section];
+
+  if (section === "products") {
+    return <ProductManager />;
+  }
+
   const primaryFormKind:
     | "product"
     | "category"
@@ -930,9 +936,7 @@ function SectionWorkspace({
     | "staff"
     | "role"
     | undefined =
-    section === "products"
-      ? "product"
-      : section === "categories"
+    section === "categories"
         ? "category"
         : section === "orders"
           ? "order"

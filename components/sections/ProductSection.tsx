@@ -5,16 +5,30 @@ import { productCategories, products, type ProductCategory } from "@/content/pro
 import { CategoryTabs } from "@/components/sections/CategoryTabs";
 import { ProductGrid } from "@/components/sections/ProductGrid";
 import { PromoBannerSection } from "@/components/sections/PromoBannerSection";
+import type { ProductCardData } from "@/components/ui/ProductCard";
 
-export function ProductSection() {
+function normalizeLabel(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+export function ProductSection({ initialProducts }: { initialProducts?: ProductCardData[] }) {
   const productsPerPage = 4;
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("Xe Máy");
   const [currentPage, setCurrentPage] = useState(1);
   const shouldScrollRef = useRef(false);
   const hasInteractedRef = useRef(false);
+  const catalogProducts = initialProducts && initialProducts.length > 0 ? initialProducts : products;
   const filteredProducts = useMemo(
-    () => products.filter((product) => product.category === activeCategory),
-    [activeCategory],
+    () =>
+      catalogProducts.filter(
+        (product) => normalizeLabel(product.category) === normalizeLabel(activeCategory),
+      ),
+    [activeCategory, catalogProducts],
   );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const visibleProducts = filteredProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);

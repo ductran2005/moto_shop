@@ -1,53 +1,16 @@
 import type { Metadata } from "next";
-import { ChevronRight, House } from "lucide-react";
+import { ChevronRight, House, LockKeyhole } from "lucide-react";
 
-import { CartBenefits } from "@/components/cart/CartBenefits";
-import { CartShell } from "@/components/cart/CartShell";
-import { RecommendedProducts } from "@/components/cart/RecommendedProducts";
+import { CheckoutShell } from "@/components/checkout/CheckoutShell";
 import { Footer } from "@/components/layout/Footer";
 import { createClient } from "@/lib/supabase/server";
-import type { CartItem, RecommendationItem } from "@/types/cart";
+import type { CartItem } from "@/types/cart";
 
 export const metadata: Metadata = {
-  title: "Giỏ hàng | SpeedZone",
+  title: "Thanh toán | SpeedZone",
   description:
-    "Xem lại sản phẩm trong giỏ hàng SpeedZone, áp dụng ưu đãi và tiếp tục thanh toán.",
+    "Hoàn tất thông tin nhận hàng, vận chuyển và phương thức thanh toán cho đơn hàng SpeedZone.",
 };
-
-const RECOMMENDED_PRODUCTS: RecommendationItem[] = [
-  {
-    id: "michelin-city-grip-2",
-    name: "Michelin City Grip 2",
-    price: 650_000,
-    image: "/images/products/motorcycle-tire.png",
-    rating: 4.7,
-    reviewCount: 74,
-  },
-  {
-    id: "sc-project-exhaust",
-    name: "Pô Akrapovic Carbon",
-    price: 7_500_000,
-    image: "/images/products/exhaust.png",
-    rating: 4.8,
-    reviewCount: 32,
-  },
-  {
-    id: "brembo-brake-pad",
-    name: "Đĩa phanh Brembo",
-    price: 2_800_000,
-    image: "/images/products/brake-pad.png",
-    rating: 4.8,
-    reviewCount: 41,
-  },
-  {
-    id: "yss-rear-shock",
-    name: "Phuộc YSS G-Series",
-    price: 3_200_000,
-    image: "/images/products/rear-shock.png",
-    rating: 4.8,
-    reviewCount: 26,
-  },
-];
 
 type CartQueryResult = {
   cart_items?: Array<{
@@ -94,32 +57,38 @@ async function getCartItems(): Promise<CartItem[]> {
     }));
 }
 
-export default async function CartPage() {
+export default async function CheckoutPage() {
   const cartItems = await getCartItems();
 
   return (
     <main className="min-h-screen bg-[var(--color-bg-primary)] pt-20 text-white">
       <section className="speed-container py-7 md:py-9">
-        <div className="flex items-center gap-2 text-sm text-zinc-500">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
           <House className="size-4" />
           <ChevronRight className="size-4" />
           <span>Giỏ hàng</span>
+          <ChevronRight className="size-4" />
+          <span className="text-zinc-300">Thanh toán</span>
         </div>
 
-        <h1 className="font-heading mt-5 text-4xl font-black italic uppercase text-white">
-          Giỏ hàng
-        </h1>
-
-        <div className="mt-7">
-          <CartShell initialItems={cartItems} />
+        <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="font-heading text-4xl font-black italic uppercase text-white">
+              Thanh toán
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+              Kiểm tra thông tin nhận hàng, chọn vận chuyển và xác nhận phương thức thanh toán
+              trước khi đặt đơn.
+            </p>
+          </div>
+          <div className="inline-flex w-fit items-center gap-2 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-bold uppercase text-emerald-300">
+            <LockKeyhole className="size-4" />
+            Bảo mật SSL
+          </div>
         </div>
 
         <div className="mt-7">
-          <CartBenefits />
-        </div>
-
-        <div className="mt-7">
-          <RecommendedProducts products={RECOMMENDED_PRODUCTS} />
+          <CheckoutShell initialItems={cartItems} />
         </div>
       </section>
 
