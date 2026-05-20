@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { StarRating } from "@/components/ui/StarRating";
-import { addGuestCartItem } from "@/lib/guest-cart";
 import { createClient } from "@/lib/supabase/client";
 
 export type ProductCardData = {
@@ -35,16 +34,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function addToGuestCart() {
-    addGuestCartItem({
-      productId: product.id,
-      name: product.name,
-      brand: product.brand,
-      price: parseCurrency(product.salePrice),
-      image: product.image,
-    });
-  }
-
   function handleAddToCart() {
     setMessage(null);
 
@@ -55,9 +44,8 @@ export function ProductCard({ product }: ProductCardProps) {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        addToGuestCart();
-        setMessage("Đã thêm vào giỏ");
-        router.refresh();
+        // Ép đăng nhập: chuyển hướng đến trang đăng nhập
+        router.push("/login");
         return;
       }
 
@@ -67,8 +55,8 @@ export function ProductCard({ product }: ProductCardProps) {
       });
 
       if (error) {
-        addToGuestCart();
-        setMessage("Đã thêm vào giỏ");
+        console.error("Add to cart DB error:", error);
+        setMessage("Lỗi: Không thể thêm vào giỏ hàng");
         return;
       }
 
