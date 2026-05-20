@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { MotoChatbot } from "@/components/chatbot/MotoChatbot";
 import { Navbar } from "@/components/layout/Navbar";
 
 interface AppChromeUser {
@@ -23,6 +24,7 @@ export function AppChrome({
     <>
       {!isAdminRoute && <Navbar user={user} />}
       {children}
+      {!isAdminRoute && <MotoChatbot />}
     </>
   );
 }
