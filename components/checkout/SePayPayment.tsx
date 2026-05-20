@@ -53,6 +53,8 @@ export function SePayPayment({
   const [isPolling, setIsPolling] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [pollCount, setPollCount] = useState(0);
+  const [isManualChecking, setIsManualChecking] = useState(false);
+  const [manualCheckResult, setManualCheckResult] = useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Tự động tạo link VietQR dự phòng miễn phí nếu SePay API bị lỗi/không trả về mã QR
@@ -90,7 +92,11 @@ export function SePayPayment({
   };
 
   // Poll payment status
-  const checkPaymentStatus = useCallback(async () => {
+  const checkPaymentStatus = useCallback(async (isManual = false) => {
+    if (isManual) {
+      setIsManualChecking(true);
+      setManualCheckResult(null);
+    }
     try {
       const res = await fetch(
         `/api/sepay/check-status?order_code=${orderCode}`,
@@ -116,10 +122,24 @@ export function SePayPayment({
           }
 
           onSuccess?.();
+        } else if (isManual) {
+          setManualCheckResult("Hệ thống chưa tìm thấy giao dịch. Vui lòng đợi 1-2 phút hoặc kiểm tra lại thông tin chuyển khoản.");
+          setTimeout(() => setManualCheckResult(null), 6000);
         }
+      } else if (isManual) {
+        setManualCheckResult("Có lỗi xảy ra khi kiểm tra trạng thái. Vui lòng thử lại sau.");
+        setTimeout(() => setManualCheckResult(null), 6000);
       }
     } catch (error) {
       console.error("Payment status check error:", error);
+      if (isManual) {
+        setManualCheckResult("Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.");
+        setTimeout(() => setManualCheckResult(null), 6000);
+      }
+    } finally {
+      if (isManual) {
+        setIsManualChecking(false);
+      }
     }
   }, [orderCode, onSuccess]);
 
@@ -320,6 +340,33 @@ export function SePayPayment({
         <ExternalLink className="size-4" />
         Mở ứng dụng ngân hàng
       </a>
+
+      {/* Tôi đã chuyển khoản button */}
+      <button
+        type="button"
+        disabled={isManualChecking || !isPolling}
+        onClick={() => checkPaymentStatus(true)}
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-sm font-bold uppercase text-emerald-400 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isManualChecking ? (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            Đang xác nhận giao dịch...
+          </>
+        ) : (
+          <>
+            <CheckCircle2 className="size-4" />
+            Tôi đã chuyển khoản thành công
+          </>
+        )}
+      </button>
+
+      {/* Manual check feedback */}
+      {manualCheckResult && (
+        <div className="rounded-md border border-amber-500/20 bg-amber-500/5 p-3 text-center text-xs text-amber-300">
+          {manualCheckResult}
+        </div>
+      )}
 
       {/* Polling status */}
       <div className="flex items-center justify-center gap-2 text-xs text-zinc-500">

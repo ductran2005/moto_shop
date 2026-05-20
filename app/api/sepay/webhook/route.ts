@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   verifyWebhookSignature,
   extractOrderCode,
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     // SePay gửi mảng các giao dịch
     const transactions = Array.isArray(body) ? body : [body];
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     for (const tx of transactions) {
       try {

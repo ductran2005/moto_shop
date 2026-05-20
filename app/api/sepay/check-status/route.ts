@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * API endpoint để kiểm tra trạng thái thanh toán của đơn hàng
@@ -18,12 +19,14 @@ export async function GET(request: Request) {
     }
 
     const supabase = await createClient();
+    const adminSupabase = createAdminClient();
 
-    // Lấy thông tin đơn hàng
-    const { data: order, error: orderError } = await supabase
+    // Lấy thông tin đơn hàng bằng adminSupabase để bypass RLS
+    const { data: order, error: orderError } = await adminSupabase
       .from("orders")
       .select(`
         id,
+        user_id,
         order_code,
         status,
         payment_method,
@@ -41,8 +44,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Lấy danh sách giao dịch SePay của đơn hàng
-    const { data: transactions } = await supabase
+    // Lấy danh sách giao dịch SePay của đơn hàng bằng adminSupabase để bypass RLS
+    const { data: transactions } = await adminSupabase
       .from("sepay_transactions")
       .select("*")
       .eq("order_id", order.id)
@@ -53,15 +56,8 @@ export async function GET(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const isOwner = user && order.id;
-    const { data: orderCheck } = await supabase
-      .from("orders")
-      .select("user_id")
-      .eq("id", order.id)
-      .single();
-
     const isAuthorized =
-      user?.id === orderCheck?.user_id || user?.role === "admin";
+      user?.id === order.user_id || user?.role === "admin";
 
     if (!isAuthorized) {
       // Vẫn trả về thông tin cơ bản cho khách vãng lai
