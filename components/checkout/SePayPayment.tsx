@@ -10,7 +10,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { clearGuestCart } from "@/lib/guest-cart";
 
@@ -37,6 +37,7 @@ interface PaymentStatus {
 // Ngân hàng nhận thanh toán
 const BANK_INFO = {
   bankName: process.env.NEXT_PUBLIC_SEPAY_BANK_NAME || "MB Bank",
+  bankCode: process.env.NEXT_PUBLIC_SEPAY_BANK_CODE || "tpb",
   accountNumber: process.env.NEXT_PUBLIC_SEPAY_ACCOUNT || "",
   accountName: process.env.NEXT_PUBLIC_SEPAY_ACCOUNT_NAME || "SPEEDZONE SHOP",
 };
@@ -53,6 +54,18 @@ export function SePayPayment({
   const [copied, setCopied] = useState<string | null>(null);
   const [pollCount, setPollCount] = useState(0);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Tự động tạo link VietQR dự phòng miễn phí nếu SePay API bị lỗi/không trả về mã QR
+  const displayQrImage = useMemo(() => {
+    if (qrImage) return qrImage;
+
+    const bankCode = BANK_INFO.bankCode.toLowerCase();
+    const bankAccount = BANK_INFO.accountNumber;
+    const accountName = encodeURIComponent(BANK_INFO.accountName);
+    const description = encodeURIComponent(orderCode);
+
+    return `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${amount}&addInfo=${description}&accountName=${accountName}`;
+  }, [qrImage, amount, orderCode]);
 
   const formatCurrency = (value: number) =>
     `${value.toLocaleString("vi-VN")}đ`;
@@ -210,11 +223,11 @@ export function SePayPayment({
       </div>
 
       {/* QR Code */}
-      {qrImage && (
+      {displayQrImage && (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-6">
           <div className="relative size-52 overflow-hidden rounded-lg bg-white p-3">
             <Image
-              src={qrImage}
+              src={displayQrImage}
               alt="QR thanh toán SePay"
               fill
               sizes="208px"

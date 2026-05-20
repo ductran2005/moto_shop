@@ -94,18 +94,23 @@ export async function POST(request: Request) {
           paymentMethod: "sepay",
         });
       } catch (sepayError) {
-        // If SePay QR generation fails, still create the order
-        // User can pay via manual transfer with order code
-        console.error("SePay QR generation error:", sepayError);
+        console.error("SePay QR generation error, using VietQR fallback:", sepayError);
+
+        // Tạo VietQR dự phòng miễn phí để đảm bảo luôn hiển thị mã QR đẹp cho khách hàng
+        const bankCode = (process.env.SEPAY_BANK_CODE || "TPB").toLowerCase();
+        const bankAccount = process.env.SEPAY_BANK_ACCOUNT || "00004067796";
+        const accountName = encodeURIComponent(process.env.NEXT_PUBLIC_SEPAY_ACCOUNT_NAME || "TRAN VAN DUC");
+        const description = encodeURIComponent(orderCode);
+        const fallbackQrImage = `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${total}&addInfo=${description}&accountName=${accountName}`;
 
         return NextResponse.json({
           orderId,
           orderCode,
-          qrImage: null,
-          qrLink: null,
+          qrImage: fallbackQrImage,
+          qrLink: fallbackQrImage,
           amount: total,
           paymentMethod: "sepay",
-          warning: "Không thể tạo mã QR. Vui lòng chuyển khoản thủ công với nội dung: " + orderCode,
+          warning: "Sử dụng mã VietQR dự phòng do API SePay chưa được cấu hình key thực tế.",
         });
       }
     }
